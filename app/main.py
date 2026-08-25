@@ -1,9 +1,60 @@
-from fastapi import FastAPI, HTTPException, status
+import logging
+
+from fastapi import FastAPI, HTTPException, Request, status
 from pydantic import BaseModel
+
+
+# Configure application logging.
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s  %(levelname)s  %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+
+logger = logging.getLogger(__name__)
+
 
 # Main FastAPI application instance.
 # All API endpoints are registered on this object.
 app = FastAPI()
+
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    """
+    Log every HTTP request processed by the application.
+
+    Successful responses are logged as INFO.
+    Client errors are logged as WARNING.
+    Server errors are logged as ERROR.
+    """
+
+    try:
+        response = await call_next(request)
+
+    except Exception:
+        logger.exception(
+            "%s %s 500",
+            request.method,
+            request.url.path,
+        )
+        raise
+
+    if response.status_code >= 500:
+        log = logger.error
+    elif response.status_code >= 400:
+        log = logger.warning
+    else:
+        log = logger.info
+
+    log(
+        "%s %s %s",
+        request.method,
+        request.url.path,
+        response.status_code,
+    )
+
+    return response
 
 class TaskCreate(BaseModel):
     """
@@ -178,3 +229,39 @@ def delete_task(task_id: int):
         status_code=status.HTTP_404_NOT_FOUND,
         detail="Task not found",
     )
+
+
+@app.get("/health")
+def health():
+    """
+    Indicate whether the application process is alive.
+
+    This endpoint is intended for liveness checks.
+
+    HTTP response:
+        200 OK -> Application process is running.
+    """
+
+    return {
+        "status": "ok"
+    }
+
+
+@app.get("/ready")
+def ready():
+    """
+    Indicate whether the application is ready to receive traffic.
+
+    At this stage, the application has no external dependencies,
+    so readiness is always reported as successful.
+
+    In future phases, this endpoint may check dependencies such as
+    databases or external services.
+
+    HTTP response:
+        200 OK -> Application is ready to receive traffic.
+    """
+
+    return {
+        "status": "ok"
+    }
