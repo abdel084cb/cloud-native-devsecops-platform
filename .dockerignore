@@ -1,0 +1,28 @@
+# Git
+.git/
+.gitignore
+
+# Local Python environment
+.venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Test cache
+.pytest_cache/
+
+# Development files
+tests/
+notes/
+
+# Environment files and potential secrets
+.env
+.env.*
+
+# IDE
+.idea/
+.vscode/
+
+# Documentation
+README.md
