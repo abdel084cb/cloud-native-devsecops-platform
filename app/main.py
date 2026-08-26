@@ -2,11 +2,12 @@ import logging
 
 from fastapi import FastAPI, HTTPException, Request, status
 from pydantic import BaseModel
+from app.config import ENVIRONMENT, LOG_LEVEL
 
 
 # Configure application logging.
 logging.basicConfig(
-    level=logging.INFO,
+    level=LOG_LEVEL,
     format="%(asctime)s  %(levelname)s  %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
 )
