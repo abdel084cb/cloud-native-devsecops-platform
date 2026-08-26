@@ -54,4 +54,4 @@ ENTRYPOINT ["python", "-m", "uvicorn"]
 
 # Default server configuration. HTTP access logging is handled
 # by the application's logging middleware.
-CMD ["app.main:app", "--host", "0.0.0.0", "--port", "8000", "--no-access-log"]
+CMD ["app.main:app", "--host", "0.0.0.0", "--no-access-log"]

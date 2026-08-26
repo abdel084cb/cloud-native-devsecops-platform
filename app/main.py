@@ -13,6 +13,11 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
+logger.info(
+    "Application configuration loaded: environment=%s log_level=%s",
+    ENVIRONMENT,
+    LOG_LEVEL,
+)
 
 
 # Main FastAPI application instance.
