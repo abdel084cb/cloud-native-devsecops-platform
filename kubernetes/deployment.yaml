@@ -17,10 +17,24 @@ spec:
         app: devsecops-api
 
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+
       containers:
         - name: api
           image: cloud-native-devsecops-api:dev
           imagePullPolicy: Never
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
 
           envFrom:
             - configMapRef:
@@ -29,6 +43,11 @@ spec:
           ports:
             - name: http
               containerPort: 8000
+
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+
           resources:
             requests:
               cpu: "100m"
@@ -54,3 +73,7 @@ spec:
             periodSeconds: 5
             timeoutSeconds: 2
             failureThreshold: 2
+
+      volumes:
+        - name: tmp
+          emptyDir: {}
