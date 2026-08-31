@@ -19,10 +19,24 @@ spec:
         app: devsecops-api
 
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+
       containers:
         - name: api
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
 
           envFrom:
             - configMapRef:
@@ -31,6 +45,10 @@ spec:
           ports:
             - name: http
               containerPort: {{ .Values.service.targetPort }}
+
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
 
           resources:
             requests:
@@ -57,3 +75,7 @@ spec:
             periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
             timeoutSeconds: {{ .Values.probes.readiness.timeoutSeconds }}
             failureThreshold: {{ .Values.probes.readiness.failureThreshold }}
+
+      volumes:
+        - name: tmp
+          emptyDir: {}
