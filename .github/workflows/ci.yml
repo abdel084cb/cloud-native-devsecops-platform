@@ -54,3 +54,71 @@ jobs:
 
       - name: Enforce SAST policy
         run: semgrep scan --config auto --severity ERROR --error
+
+  sca:
+    name: Trivy SCA
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Scan dependencies
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln
+          format: table
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: 1
+
+  iac:
+    name: Trivy IaC
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Scan infrastructure configuration
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: config
+          scan-ref: .
+          format: table
+          severity: HIGH,CRITICAL
+          exit-code: 1
+
+  build-and-scan:
+    name: Build and scan container
+    runs-on: ubuntu-latest
+
+    needs:
+      - tests
+      - sast
+      - sca
+      - iac
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Build container image
+        run: |
+          docker build \
+            -f docker/Dockerfile \
+            -t cloud-native-devsecops-api:${{ github.sha }} \
+            .
+
+      - name: Scan container image
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: image
+          image-ref: cloud-native-devsecops-api:${{ github.sha }}
+          scanners: vuln
+          format: table
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: 1
