@@ -2,3 +2,8 @@ notes/
 __pycache__/
 *.py[cod]
 .venv/
+
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
