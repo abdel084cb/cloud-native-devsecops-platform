@@ -1,5 +1,5 @@
-resource "aws_ecr_repository" "api" {
-  name                 = "devsecops-api"
+resource "aws_ecr_repository" "repo" {
+  name                 = "image_repository"
   image_tag_mutability = "IMMUTABLE"
 
   image_scanning_configuration {
@@ -7,7 +7,6 @@ resource "aws_ecr_repository" "api" {
   }
 
   tags = {
-    Project   = "cloud-native-devsecops-platform"
-    ManagedBy = "Terraform"
+    Name = "ecr"
   }
 }
